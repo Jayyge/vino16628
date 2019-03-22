@@ -2,11 +2,27 @@
  * Votre CSS
  ********/
 
+
+
+
+
+/*    -- Login  --    */ 
+#imglogin{
+   width: 30%;
+    margin-top: 30%;
+}
+
+#imgmobile{
+    display: none;
+}
+
+
+
+
 html, body {
 	height: 100%;
 	margin: 0;
 	background-color: #E5E5E5;
-	
 	font-family: 'Roboto', 'RobotoDraft', sans-serif;
 	font-size: 95%;
 	
@@ -36,34 +52,53 @@ html, body {
 }
 .liste > div:hover {
 	color:#000000;
-	transition: color 200ms ease-in-out;
-	
+	transition: color 200ms ease-in-out;	
 }
 
-@media all and (max-width:640px)
-{
-	footer
-	{
-		display:none;
-	}
 
- /* .navbar{
-  margin: 0px 0px -23px -15px;
+
+
+#imgcellier{
+    width: 100%;
 }
-#cellier{
-  margin-left : -30px !important;
-  margin-right : -0px !important;
 
+#imgfoot{
+    width: 20%;
 }
-header{
-  width: 100%;
-  
-  margin: 0px
-  background-color: red;
-  box-sizing: content-box;
-}*/
 
-	
+div.options.btn-group{
+    margin: auto;
+}
+
+div.options.btn-group{
+    width: 100%;
+}
+
+.body-login{
+    background-color: white;
+    text-align: center;
+}
+
+div.d-flex{
+    width: 100%;
+}
+
+header.container-fluid{
+    padding: 0;
+}
+
+
+img.rounded-circle{
+    width: 10%
+}
+
+img{
+    width: 100%;
+}
+
+
+.bodylogin{
+    background-color: white;
 }
 
 footer
@@ -73,7 +108,8 @@ footer
 	width: 100%;
 	padding-top:3px;
 	text-align: center;
-	background-color:#FFFFFF;
+	background-color:black;
+    color: white;
 }
 footer p
 {
@@ -81,6 +117,10 @@ footer p
 	padding-right:50px;
 	font-size : 10px;
 }
+.imgfoot{
+    margin-top: 4%;
+}
+
 
 /*Bootstrap*/
 .bd-placeholder-img {
@@ -90,12 +130,6 @@ footer p
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
-}
-
-@media (min-width: 768px) {
-	.bd-placeholder-img-lg {
- 	 font-size: 3.5rem;
-	}
 }
 
 .sidebar1 {
@@ -254,12 +288,7 @@ body {
     white-space: normal;
 }
 #header-site {
-    background: #262727 none repeat scroll 0 0;
-    border-bottom: 2px solid #cf4137;
-    float: left;
-    position: fixed;
-    top: 0;
-    width: 100%;
+
 }
 .logo-site {
     float: left;
@@ -398,11 +427,7 @@ body {
     background: none;
 }
 
-@media(max-width:768px){
-.navbar-collapse{ clear:both;}
 
-    
-}
 
 .dropbtn {
   background-color: transparent;
@@ -495,74 +520,39 @@ body {
   background-color: transparent;
   font-size: 22px;
 }
-/****** popup  la liste des bouteilles**********/
 
-.content {
-  background: #fff;
-  height:500px;
+
+
+/*  @@@@@@@@@@@@ cellphone @@@@@@@@@@@@@@@@@@@@@@@ */ 
+
+
+@media all and (max-width:640px){
+	footer{
+		display:none;
+	}
+
+ .navbar{
+  margin: 0px 0px -23px -15px;
 }
-.overlay {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.7);
-  transition: opacity 500ms;
-  visibility: hidden;
-  opacity: 0;
-}
-.overlay:target {
-  visibility: visible;
-  opacity: 1;
+#imgcellier{
+    display: none;
 }
 
-.popup {
-  margin: 70px auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 5px;
-  width: 80%;
-  
-  overflow:auto;
-  position: relative;
-  transition: all 5s ease-in-out;
-    /*overflow-y: scroll;*/
+#imgmobile{
+    display: block;
+    width: 80%;
+    padding-left: 15%;
+}   
+    
 }
 
-.popup h2 {
-  margin-top: 0;
-  color: #333;
-  font-family: Tahoma, Arial, sans-serif;
-}
-.popup .close {
-  position: absolute;
-  top: 20px;
-  right: 30px;
-  transition: all 200ms;
-  font-size: 30px;
-  font-weight: bold;
-  text-decoration: none;
-  color: #333;
-}
-.popup .close:hover {
-  color: #06D85F;
-}
-.popup .content {
-  max-height: 30%;
-  overflow: auto;
+
+@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+ 	 font-size: 3.5rem;
+	}
 }
 
-@media screen and (max-width: 700px){
-  .box{
-    width: 100%;
-  }
-  .popup{
-    width: 100%;
-  }
-}
-/******fin popup*******/
-.imageliste{
-  width: 70px;
-  height: 70px;
+@media(max-width:768px){
+.navbar-collapse{ clear:both;}
 }
