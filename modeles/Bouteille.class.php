@@ -144,7 +144,7 @@ class Bouteille extends Modele {
 	public function recupererQuantite($id)
 	{
 			
-		$requete = "SELECT quantite From vino_contient WHERE bouteille_id = $id";
+		$requete = "SELECT quantite From vino_bouteille WHERE id = $id";
 		$res = $this->_db->query($requete);
         $rangee = $res->fetch_assoc();
 		return $rangee;
@@ -190,7 +190,7 @@ class Bouteille extends Modele {
 		//TODO : Valider les données.
 			
 			
-		$requete = "UPDATE vino_contient SET quantite = GREATEST(quantite + ". $nombre. ", 0) WHERE bouteille_id = ". $id;
+		$requete = "UPDATE vino_bouteille SET quantite = GREATEST(quantite + ". $nombre. ", 0) WHERE id = ". $id;
 		//echo $requete;
         $res = $this->_db->query($requete);
         
@@ -218,14 +218,13 @@ class Bouteille extends Modele {
 						vino_bouteille.format,
 						vino_bouteille.garde_jusqua,
 						vino_bouteille.millesime,
-						vino_contient.quantite,
-						vino_contient.date_achat,
-						vino_contient.notes,
+						vino_bouteille.quantite,
+						vino_bouteille.date_achat,
+						vino_bouteille.notes,
 						vino_type.type
 
 						from vino_bouteille
-						INNER JOIN vino_contient ON vino_contient.bouteille_id = vino_bouteille.id
-						INNER JOIN vino_cellier ON vino_contient.cellier_id = vino_cellier.id
+						INNER JOIN vino_cellier ON vino_bouteille.cellier_id=vino_cellier.id 
 						INNER JOIN vino_type ON vino_bouteille.type_id = vino_type.id
 						WHERE vino_bouteille.id = ". $id;
 		$res = $this->_db->query($requete);
@@ -250,7 +249,7 @@ class Bouteille extends Modele {
 	public function sauvegarderModife($id, $nom, $dateachat, $notes, $quantite, $Garde, $prix, $pays, $mille ,$description, $type_id, $format)
 	{
 		
-	    $sql = "UPDATE vino_bouteille, vino_contient SET 
+	    $sql = "UPDATE vino_bouteille SET 
     		vino_bouteille.nom=?, 
     		vino_bouteille.description=?, 
     		vino_bouteille.garde_jusqua=?, 
@@ -258,13 +257,12 @@ class Bouteille extends Modele {
     		vino_bouteille.pays=?, 
     		vino_bouteille.millesime=?, 
     		vino_bouteille.type_id=?,
-    		vino_contient.quantite=?,
-    		vino_contient.date_achat=?,
-    		vino_contient.notes=?,
+    		vino_bouteille.quantite=?,
+    		vino_bouteille.date_achat=?,
+    		vino_bouteille.notes=?,
     		vino_bouteille.format=?
 			
-    		WHERE vino_bouteille.id=?
-    		AND vino_contient.bouteille_id = vino_bouteille.id";
+    		WHERE vino_bouteille.id=?";
 		$stmt = $this->_db->prepare($sql);
 		$stmt->bind_param('sssdssiisssi', $nom, $description, $Garde, $prix, $pays, $mille, $type_id, $quantite, $dateachat, $notes, $format, $id);
 		$stmt->execute();
@@ -291,6 +289,27 @@ class Bouteille extends Modele {
 		return $rangees;
 	
 	}
+	/**
+	* Fonction recuperer les pays
+	*
+	* @return $row détails d'un cellier
+	**/
+	 public function GetPays()
+	{
+		$rangees = array();		
+		$requete = "SELECT DISTINCT pays FROM vino_bouteille ORDER BY pays";
+		$res = $this->_db->query($requete);
+        if($res->num_rows)
+		{
+			while($rangee = $res->fetch_assoc())
+			{
+				$rangees[] = $rangee['pays'];
+			}
+		}
+		
+		return $rangees;
+	
+	}
 
 	/**
 	 * Fonction RecupererCellierParId Pour récupérer les détails d'un cellier par son id 
@@ -300,7 +319,7 @@ class Bouteille extends Modele {
 	 */
 	public function CellierParUsager($id)
 	{
-				
+		$rangees = array();		
 		$requete = "SELECT 
 					vino_cellier.id,
 					vino_cellier.nom
@@ -328,9 +347,49 @@ class Bouteille extends Modele {
 	 * @param $id id du cellier
 	 * @return $row détails d'un cellier
 	 */
-	public function RecupererBouteilleParCellier($id)
+	public function RecupererBouteilleParCellier($id, $filter = array())
 	{
-				
+		$where = '1';
+		if(!empty($filter['year'])) {
+			$where .= ' AND vino_bouteille.millesime = "'.$filter['year'].'"';
+		}
+		if(!empty($filter['name'])) {
+			$where .= ' AND vino_bouteille.nom LIKE "%'.$filter['name'].'%"';
+		}
+		if(!empty($filter['type'])) {
+			$where .= ' AND vino_bouteille.type_id = "'.$filter['type'].'"';
+		}
+		if(!empty($filter['country'])) {
+			$where .= ' AND vino_bouteille.pays LIKE "'.$filter['country'].'"';
+		}				
+		if(!empty($filter['qty-till'])) {
+			$where .= ' AND vino_bouteille.quantite <= "'.$filter['qty-till'].'"';
+		}
+		if(!empty($filter['qty-from'])) {
+			$where .= ' AND vino_bouteille.quantite >= "'.$filter['qty-from'].'"';
+		}
+		//variable par defaut de tri
+		$Tri ='vino_bouteille.nom';
+		//teste de variable pour le triage 
+		if( $filter['filtre'] == 'nom')
+		   $Tri ="  vino_bouteille.nom";
+		if( $filter['filtre'] == 'type')
+		   $Tri ="  vino_type.type";
+		if( $filter['filtre'] == 'pays')
+		   $Tri ="  vino_bouteille.pays ";
+		if( $filter['filtre'] == 'millesime')
+		   $Tri ="  vino_bouteille.millesime";
+		if( $filter['filtre'] == 'date_achat')
+		   $Tri ="  vino_bouteille.date_achat";
+		if( $filter['filtre'] == 'code_saq')
+		   $Tri ="  vino_bouteille.code_saq";
+		if( $filter['filtre'] == 'quantite')
+		   $Tri ="  vino_bouteille.quantite ";
+		if( $filter['filtre'] == 'notes')
+		   $Tri ="  vino_contient.notes ";
+		if( $filter['filtre'] == 'prix_saq')
+		   $Tri ="  vino_bouteille.prix_saq ";
+
 		$requete = "SELECT 
 						vino_bouteille.id as id_bouteille_cellier,
 						vino_bouteille.nom,
@@ -344,38 +403,129 @@ class Bouteille extends Modele {
 						vino_bouteille.format,
 						vino_bouteille.garde_jusqua,
 						vino_bouteille.millesime,
-						vino_contient.quantite,
-						vino_contient.date_achat,
-						vino_contient.notes,
+						vino_bouteille.quantite,
+						vino_bouteille.date_achat,
+						vino_bouteille.notes,
 						vino_type.type
 
 						from vino_bouteille
-						INNER JOIN vino_contient ON vino_contient.bouteille_id = vino_bouteille.id
-						INNER JOIN vino_cellier ON vino_contient.cellier_id = vino_cellier.id
+						INNER JOIN vino_cellier ON vino_bouteille.cellier_id=vino_cellier.id 
 						INNER JOIN vino_type ON vino_bouteille.type_id = vino_type.id
-						WHERE vino_cellier.id = ". $id;
+						WHERE vino_cellier.id = ". $id . ' AND ' . $where." ORDER BY ".$Tri." ASC";
 
-		if(($res = $this->_db->query($requete)) ==	 true)
-		{
-			if($res->num_rows)
-			{
-				while($rangee = $res->fetch_assoc())
-				{
-					$rangee['nom'] = trim(utf8_encode($rangee['nom']));
-					$rangees[] = $rangee;
-				}
-			}
-		}
-		else 
-		{
-			throw new Exception("Erreur de requête sur la base de donnée", 1);
-			 
-		}
-		
-		
-		
-		return $rangees;
+        $res = $this->_db->query($requete);
+        $data = array();
+        while ($row = $res->fetch_assoc()) {
+            $data[] = $row;
+        }
+        
+        return $data;
 	}
+
+	/**
+	* Fonction d'enregistrement
+	* 
+	* @param $username le nom d'utilisateur de l'usager
+	* @param $password le mot de passe de l'usager
+	* @param $nom le nom de l'usager
+	* @param $prenom le prénom de l'usager
+	* @return $resultat résultat de la requête
+	*/
+	public function sauvegarderCellier($nomCellier, $usager_id)
+	{
+		
+		$requete = "INSERT into vino_cellier(nom, usager_id) VALUE (?, ?)";
+		
+        $stmt = $this->_db->prepare($requete);
+		$stmt->bind_param('si', $nomCellier, $usager_id);
+		$stmt->execute();
+	}
+
+	/**
+	* Fonction de sauvegarde d'une bouteille dans un cellier
+	* 
+	* @param $cellier_id l'id du cellier
+	* @param $bouteille_id l'id de la bouteille
+	* @param $quantite quantité 
+	* @param $date_achat date d'achat de la bouteille
+	* @param $notes notes 
+	*/
+	public function sauvegarderBouteilleCellier($cellier_id, $bouteille_id, $quantite, $date_achat, $notes)
+	{
+		
+		$requete = "INSERT into vino_contient(cellier_id, bouteille_id, quantite, date_achat, notes) VALUE (?, ?, ?, ?, ?)";
+		
+        $stmt = $this->_db->prepare($requete);
+		$stmt->bind_param('iiiss', $cellier_id, $bouteille_id, $quantite, $date_achat, $notes);
+		$stmt->execute();
+	}
+
+	/**
+	 * Cette méthode de chercher un cellier dans la table vino_cellier
+	 * @param string $nomCellier nom du cellier
+	 * 
+	 * @return retourne l'occurence.
+	 */
+	public function chercherCellier($nomCellier)
+	{
+			
+		$requete = "SELECT nom From vino_cellier WHERE nom = '$nomCellier'";
+		$res = $this->_db->query($requete);
+        $rangee = $res->fetch_assoc();
+		return $rangee;
+		
+	}
+
+	/**
+	 * Cette méthode de chercher un cellier dans la table vino_cellier
+	 * @param integer $id id du cellier
+	 * 
+	 * @return retourne l'occurence.
+	 */
+	public function cellierParId($id)
+	{
+			
+		$requete = "SELECT nom as nomCellier From vino_cellier WHERE id = $id";
+		$res = $this->_db->query($requete);
+        $rangee = $res->fetch_assoc();
+		return $rangee;
+		
+	}
+
+	/**
+	 * Cette méthode permet d'obtenir une bouteille par id
+	 * @param integer $id id de la bouteille
+	 * 
+	 * @return retourne l'occurence.
+	 */
+	public function bouteilleParId($id)
+	{
+			
+		$requete = "SELECT * From vino_bouteille WHERE id = $id";
+		$res = $this->_db->query($requete);
+        $rangee = $res->fetch_assoc();
+		return $rangee;
+		
+	}
+
+	/**
+	 * Cette méthode permet de retirer une bouteille d'un cellier
+	 * 
+	 * @param int $id id de la bouteille
+	 * 
+	 * @return retourne l'occurence.
+	 */
+	public function retirerBouteilleCellier($id)
+	{
+			
+		$requete = "DELETE From vino_bouteille WHERE id = $id";
+		$res = $this->_db->query($requete);
+        $rangee = $res->fetch_assoc();
+		return $rangee;
+		
+	}
+
+
 }
 
 

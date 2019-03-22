@@ -32,6 +32,10 @@ class Controler
 						$this->listeBouteille();
 						break;
 
+					case 'bouteilleParId':
+						$this->bouteilleParId();
+						break;
+
 					case 'autocompleteBouteille':
 						$this->autocompleteBouteille();
 						break;
@@ -64,8 +68,16 @@ class Controler
 						$this->accueil();
 						break;
 
+					case 'cellierParid':
+						$this->cellierParid();
+						break;
+
 					case 'bouteilleParCellier':
-						$this->bouteilleParCellier($_REQUEST['id']);
+						$this->bouteilleParCellier($_REQUEST['id'], empty($_REQUEST['filter']) ? array() : $_REQUEST['filter']);
+						break;
+
+					case 'ajouterCellier':
+						$this->ajouterCellier($_REQUEST['nomCellier']);
 						break;
 
 					case 'importer':
@@ -81,14 +93,43 @@ class Controler
 
 					case 'sauvegarder':
 						// Tester si les paramêtres sont envoyés
-						if (isset($_POST['id'],$_POST['nom'], $_POST['date_achat'], $_POST['notes'], $_POST['quantite'], $_POST['garde_jusqua'], $_POST['prix_saq'], $_POST['pays'],$_POST['millesime'], $_POST['description'], $_POST['type'], $_POST['format'])){
+						if (isset($_REQUEST['id'],$_REQUEST['nom'], $_REQUEST['date_achat'], $_REQUEST['notes'], $_REQUEST['quantite'], $_REQUEST['garde_jusqua'], $_REQUEST['prix_saq'], $_REQUEST['pays'],$_REQUEST['millesime'], $_REQUEST['description'], $_REQUEST['type'], $_REQUEST['format']))
+						{
+							// Déclarer un tableau
+							$message = array();
 
-							$this->sauvegardeModifierCellier($_POST['id'], $_POST['nom'], $_POST['date_achat'], $_POST['notes'], $_POST['quantite'], $_POST['garde_jusqua'], $_POST['prix_saq'], $_POST['pays'], $_POST['millesime'], $_POST['description'], $_POST['type'], $_POST['format']);
+							// Valider que les paramètres sont valides
+                            $message = $this->valideFormModif($_REQUEST['nom'], $_REQUEST['date_achat'], $_REQUEST['quantite'], $_REQUEST['garde_jusqua'], $_REQUEST['prix_saq'], $_REQUEST['pays'],$_REQUEST['millesime'], $_REQUEST['description'], $_REQUEST['format']);
+                            
+                            // Si le message est vide
+                            // Ce qui signifie qu'il y'a pas eu d'erreurs
+                            if(count($message) ==0)
+                            {
+                            	// On procède à la modification
+								$this->sauvegardeModifierCellier($_REQUEST['id'], $_REQUEST['nom'], $_REQUEST['date_achat'], $_REQUEST['notes'], $_REQUEST['quantite'], $_REQUEST['garde_jusqua'], $_REQUEST['prix_saq'], $_REQUEST['pays'], $_REQUEST['millesime'], $_REQUEST['description'], $_REQUEST['type'], $_REQUEST['format']);
+							}
+							// Sinon on affiche le formulaire de modification avec l'ensemble des erreurs
+							else{
+								$this->modifierBouteilleCellier($_REQUEST['id'], $message);
+
+							}
+						}
+						break;
+
+					case 'sauvegarderBouteilleCellier':
+						// Tester si les paramêtres sont envoyés
+						if (isset($_REQUEST['cellier'],$_REQUEST['bouteille'],$_REQUEST['quantite'], $_REQUEST['date_achat'] )){
+
+							$this->sauvegarderBouteilleCellier($_REQUEST['cellier'], $_REQUEST['bouteille'], $_REQUEST['quantite'], $_REQUEST['date_achat'],$_REQUEST['notes'] );
 						}
 						break;	
 
 					case 'boireBouteilleCellier':
 						$this->boireBouteilleCellier();
+						break;
+
+					case 'retirerBouteilleCellier':
+						$this->retirerBouteilleCellier();
 						break;
 
 					case "Login":
@@ -121,7 +162,90 @@ class Controler
 			        		require_once(__DIR__."/vues/login.php");
 			        	}
 		        		break; 
+		        	case "ChangerMotDePass":
+		        		$error = '';
+		        		if(isset($_REQUEST["password"]) && isset($_REQUEST["passwordNouveau"]) && isset($_REQUEST["passwordRepeat"]) && ($_REQUEST["passwordNouveau"] == $_REQUEST["passwordRepeat"]))
+			        	{	
+			        		 if(strlen($_REQUEST['username']) < 3 or strlen($_REQUEST['username']) > 30)
+	                        {
+	                            $err[] .= "Login dois avoir plus au moin du 3 simboles et pas plus 30";
+	                        }
+	                        
+			        		$usager = new Usager();	
+			        		if(!$usager->ChangerMotDePass($_SESSION["UserName"],$_REQUEST["password"], $_REQUEST["passwordNouveau"])) {
+			        			$error = 'Invalid password';
+			        		}
+			        		else{
+			        			header('Location: '.URL_ROOT.'index.php?requete=cellier');
+			        			exit;
+			        		}
 
+			        	}	else {
+			        		$error = 'Invalid data';
+			        	}
+			        	require_once(__DIR__."/vues/changerMotDepass.php");
+		        	    break;
+		        		
+		        	case "Enregistrer":
+			        	
+	                    $err = array();
+	                   	if(isset($_REQUEST["username"]) && isset($_REQUEST["password"]) && isset($_REQUEST["passwordRepeat"]) && isset($_REQUEST["nom"]) && isset($_REQUEST["prenom"]) && !isset($_SESSION["UserID"]))
+			        	{
+			        		if(!preg_match("/^[a-zA-Z0-9]+$/",$_REQUEST['username']))
+	                        {
+	                            $err[] = "Login peut avoir seulement de lettre et chifres";
+	                        }
+	                        if(($_REQUEST["passwordRepeat"]) != ($_REQUEST['password']))
+	                        {
+	                            $err[] .= "Mot de pass pas idantiques"."</br>";
+	                        }
+	                        if(strlen($_REQUEST['username']) < 3 or strlen($_REQUEST['username']) > 30)
+	                        {
+	                            $err[] .= "Login dois avoir plus au moin du 3 simboles et pas plus 30";
+	                        }
+	                        if(!preg_match("/^[a-zA-Z]+$/",$_REQUEST['nom']))
+	                        {
+	                            $err[] .= "Nom dois avoir que des lettres "."</br>";
+	                        }
+	                        if(!preg_match("/^[a-zA-Z]+$/",$_REQUEST['prenom']))
+	                        {
+	                            $err[] .= "Prenom dois avoir que des lettres"."</br>";
+	                        }
+	                        	                       
+	                        $usager = new Usager();
+							// Faire appel à la fonction de sauvegarde
+							$resultat = $usager->testUser($_REQUEST['username']);
+				
+	                        if($resultat['c'] > 0)
+	                        {
+	                            $err[] = "Usager avec la meme nom existe";
+	                        }
+	                        
+	                        if(count($err) == 0)
+	                        {
+	                        	$enregistrer = $usager->Enregistrer($_REQUEST['username'], $_REQUEST['password'], $_REQUEST['nom'], $_REQUEST['prenom']);
+	                  
+	                            if($enregistrer) 
+	                            { 
+
+                                   $_SESSION["UserID"] = $enregistrer["id"];
+					        	   $_SESSION["prenom"] = $_REQUEST["prenom"];
+	                               $_SESSION["UserName"] = $_REQUEST["username"];
+
+			                       $this->cellierUsager($_SESSION["UserID"]);
+	                            }
+	                        }
+	                        else{
+	                            $messageErreur = implode(' ', $err);
+	                            require_once(__DIR__."/vues/formEnregistrer.php");
+	                        }
+		                }
+		                else
+		                {
+		                        require_once(__DIR__."/vues/formEnregistrer.php");
+		                }
+				    	break;
+				    		
 		        	case "Logout":
 						//delete la session en lui assignant un tableau vide
 						$_SESSION = array();
@@ -176,8 +300,22 @@ class Controler
 		{
 			$bte = new Bouteille();
             $cellier = $bte->getListeBouteilleCellier();
-            
+             
             echo json_encode($cellier);
+                  
+		}
+
+		/**
+		* Fonction d'affichage des détails d'une bouteille par id
+		* 
+		*/
+		private function bouteilleParId()
+		{
+			$bte = new Bouteille();
+			$body = json_decode(file_get_contents('php://input'));
+			$Bouteille = $bte->bouteilleParId($body->id);
+            
+            echo json_encode($Bouteille);
                   
 		}
 		
@@ -210,8 +348,12 @@ class Controler
 			}
 			else{
 				$bte = new Bouteille();
-				// $data = $bte->RecupererBouteilleParCellier($id);
+				// Récupérer la liste des celliers par usager
 				$data = $bte->CellierParUsager($_SESSION["UserID"] );
+				// Récupérer la liste des bouteilles
+				$dat = $bte->getListeBouteille();
+				$datas = $bte->RecupererTypes();
+
 				include("vues/entete.php");
 				include("vues/ajouter.php");
 				include("vues/pied.php");
@@ -254,7 +396,7 @@ class Controler
 		* 
 		* @param $id id de la bouteille cellier
 		*/
-		private function modifierBouteilleCellier($id)
+		private function modifierBouteilleCellier($id, $message='')
 		{	
 			$bte = new Bouteille();
 			// Récupérer la bouteille par id
@@ -292,6 +434,21 @@ class Controler
 		}
 
 		/**
+		* Fonction sauvegarder bouteille dans un cellier
+		* 
+		* @param $cellier_id id du cellier
+		* @param $bouteille_id id de la bouteille
+		*/
+		private function sauvegarderBouteilleCellier($cellier_id, $bouteille_id,$quantite, $date_achat, $notes)
+		{
+			$bte = new Bouteille();
+			// Faire appel à la fonction de sauvegarde
+			$data = $bte->sauvegarderBouteilleCellier($cellier_id, $bouteille_id, $quantite, $date_achat, $notes);
+			// Afficher l'accueil
+			$this->accueil();
+		}
+
+		/**
 		* Fonction de modification d'une bouteille dans un cellier
 		* 
 		* @param $idUsager id de l'usager
@@ -304,6 +461,7 @@ class Controler
             $cellier = new Bouteille();
             // Récupérer les cellier par usager authentifié
             $dat['cellier'] = $cellier->CellierParUsager($idUsager);
+            $dat['nomCellier'] = $cellier->cellierParId($id=1);
 			include("vues/entete.php");
 			include("vues/cellier.php");
 			include("vues/pied.php");
@@ -314,12 +472,15 @@ class Controler
 		* 
 		* @return $resultat Sous format json
 		*/
-		private function bouteilleParCellier($id)
+		private function bouteilleParCellier($id, $filter = array())
 		{
 			// $body = json_decode(file_get_contents('php://input'));
 			$bte = new Bouteille();
-			$data = $bte->RecupererBouteilleParCellier($id);
+			$data = $bte->RecupererBouteilleParCellier($id, $filter);
 			$dat['cellier'] = $bte->CellierParUsager($_SESSION["UserID"] );
+			$dat['nomCellier'] = $bte->cellierParId($id);
+			
+			$pays = $bte->GetPays();
 			include("vues/entete.php");
 			include("vues/cellier.php");
 			include("vues/pied.php");
@@ -340,6 +501,126 @@ class Controler
 			include("vues/ajouter.php");
 			include("vues/pied.php");
 		}
+
+		/**
+		* Fonction d'ajout d'un cellier
+		* 
+		* @param $nomCellier le nom du cellier
+		*/
+		private function ajouterCellier($nomCellier)
+		{
+			// $body = json_decode(file_get_contents('php://input'));
+			$bte = new Bouteille();
+			$existe = $bte->chercherCellier($nomCellier);
+			
+			if ($existe ==null)  {
+				$data = $bte->sauvegarderCellier($nomCellier, $_SESSION['UserID']);
+				
+			}
+			else
+    		{
+    			$messageErreur = "Un cellier portant ce nom existe déjà !";
+    			
+    		}
+			$dat['cellier'] = $bte->CellierParUsager($_SESSION["UserID"] );
+			// $dat['cellier'] = $bte->CellierParUsager($_SESSION["UserID"] );
+			include("vues/entete.php");
+			include("vues/cellier.php");
+			include("vues/pied.php");
+		}
+
+		/**
+		* Fonction d'ajout d'une bouteille dans le cellier
+		* 
+		* @return $resultat Sous format json
+		*/
+		private function cellierParid()
+		{
+			$body = json_decode(file_get_contents('php://input'));
+			
+			$bte = new Bouteille();
+			$resultat = $bte->cellierParId($body->id);
+			
+			echo json_encode($resultat);
+		}
+
+		/**
+		* Fonction d'ajout d'une bouteille dans le cellier
+		* 
+		* @return $resultat Sous format json
+		*/
+		private function retirerBouteilleCellier()
+		{
+			$body = json_decode(file_get_contents('php://input'));
+			
+			$bte = new Bouteille();
+			$resultat = $bte->retirerBouteilleCellier($body->id);
+			
+			echo ($resultat);
+		}
+
+		/**
+		* Fonction de validation de modification d'une bouteille
+		* 
+		* @param $nom nom de la bouteille cellier
+		* @param $dateachat la date d'achat de la bouteille cellier
+		* @param $quantite la quantité de la bouteille cellier
+		* @param $Garde à garder jusqu'à quand la bouteille cellier
+		* @param $prix prix de la bouteille cellier
+		* @param $pays pays de la bouteille cellier
+		* @param $mille année de la bouteille cellier
+		* @param $description la description de la bouteille cellier
+		* @param $format le format de la bouteille cellier
+		* @return $msgErreur messages d'erreur
+		*/
+        public function valideFormModif($nom, $dateachat, $quantite, $Garde, $prix, $pays, $millesime ,$description, $format)
+        {
+            $msgErreur = array();
+           
+            // Trimer les variables
+            $nom = trim($nom);
+            $pays = trim($pays);
+            $format = trim($format);
+            $prix = trim($prix);
+            $quantite = trim($quantite);
+
+            // Validation du nom de la bouteille
+            if($nom == ""){
+                $msgErreur['erreur_nom'] = "Le nom ne peut être vide !";
+            }
+            
+            // Validation date d'achat
+            if (!preg_match("/([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/i", $dateachat)) {
+			    $msgErreur['erreur_date_achat'] = "La date est invalide !";
+			}
+            
+            // Validation quantité
+            if(!is_numeric($quantite) || !preg_match("/^([1-9]|[1-9]\d|[1-9]\d\d)$/i", $quantite) ){
+                $msgErreur['erreur_quantite']= "La quantité est invalide !";
+            }
+            // Validation garder jusqu'à
+            if (!preg_match("/([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/i", $Garde)) {
+			    $msgErreur['erreur_garde_jusqua'] = "La date est invalide !";
+			}
+
+			// Validation du millesime (année)
+            if (!preg_match("/^[12][0-9]{3}$/i", $millesime)) {
+			    $msgErreur['erreur_millesime'] = "La date est invalide !";
+			}
+
+			// Validation du prix
+			if(!is_float($prix) && !is_numeric($prix)){
+                $msgErreur['erreur_prix'] = "Le prix n'est pas valide !";
+			}
+
+			// Validation du pays
+			if(!preg_match("/^[a-zàáâäçèéêëìíîïñòóôöùúûü]+[ \-']?[a-zàáâäçèéêëìíîïñòóôöùúûü]+[ \-']?]*[a-zàáâäçèéêëìíîïñòóôöùúûü]+$/i", $pays)){
+                $msgErreur['erreur_pays'] = "Le pays ne peut être vide ou il est invalide !<br>";
+            }
+            
+            // Retourner un message d'erreur
+            return $msgErreur;
+        }
 
 		
 }
