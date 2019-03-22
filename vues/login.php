@@ -15,8 +15,10 @@
 
     <!-- Custom styles for this template -->
     <link href="signin.css" rel="stylesheet">
+      <link rel="stylesheet" href="./css/main.css" type="text/css" media="screen">
   </head>
-  <body class="text-center">
+    <header>  <img class="mb-6" src="images/logo.png" alt="" id="imglogin"></header>
+  <body class="body-login">
   	<div class="container">
   		<div class="col-lg-4 mx-auto">
   			<?php
@@ -25,7 +27,7 @@
 			?>
 		
 		    <form method="POST" class="form-signin" action="<?php echo URL_ROOT; ?>index.php">
-			  <img class="mb-6" src="images/logo.png" alt="" width="72">
+			 
 			  <h1 class="h3 mb-3 font-weight-normal">Connexion</h1>
 			  <label for="inputEmail" class="sr-only">Nom usager</label>
 			  <input type="text" id="inputEmail" name="username" class="form-control" placeholder="Nom usager" required autofocus>

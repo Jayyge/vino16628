@@ -10,7 +10,7 @@
     <link rel="canonical" href="https://getbootstrap.com/docs/4.3/examples/sign-in/">
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
+<link rel="stylesheet" href="./css/main.css" type="text/css" media="screen">
     <style>
       .bd-placeholder-img {
         font-size: 1.125rem;
@@ -30,42 +30,39 @@
     <!-- Custom styles for this template -->
     <link href="signin.css" rel="stylesheet">
   </head>
-  <body class="text-center">
+    <header>  <img class="mb-6" src="images/logo.png" alt="" id="imglogin"></header>
+  <body class="body-login">
   	<div class="container">
   		<div class="col-lg-4 mx-auto">
   			<?php
 				if(!isset($_SESSION["UserID"]))
 				{
 			?>
-		
+		<div id="p-enregistrer"
 		    <form method="POST" class="form-signin" action="<?php echo URL_ROOT; ?>index.php">
-			  <img class="mb-4" src="/docs/4.3/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
+			
 			  <h1 class="h3 mb-3 font-weight-normal">Enregistrer </h1>
 			  <label for="inputEmail" class="sr-only">Nom usager</label>
-			  <input type="text" id="inputName" name="username" class="form-control" placeholder="Nom usager" required autofocus>
-
+			  <input type="text" id="inputEmail" name="username" class="form-control" placeholder="Nom usager" required autofocus>
 			  <label for="inputPassword" class="sr-only">Mot de passe</label>
 			  <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Mot de passe" required>
 
-        <label for="inputPassword" class="sr-only">Entrer encore mot de passe</label>
-        <input type="password" id="inputPassword" name="passwordRepeat" class="form-control" placeholder="Entrer encore mot de passe" required>
 
 			  <label for="inputEmail" class="sr-only">Prenom usager</label>
 			  <input type="text" id="inputEmail" name="prenom" class="form-control" placeholder="Prenom usager" required autofocus>
 
 			  <label for="inputEmail" class="sr-only">Nom usager</label>
-			  <input type="text" id="inputEmail" name="nom" class="form-control" placeholder="Nom usager" required autofocus>
+			  <input type="text" id="inputEmail" name="username" class="form-control" placeholder="Nom usager" required autofocus>
+        </div>
 
-
-			 <!--  <div class="checkbox mb-3">
+			  <div class="checkbox mb-3">
 			    <label>
 			      <input type="checkbox" value="remember-me">Se souvenir de moi
 			    </label>
-			  </div> -->
-			
+			  </div>
+			</form>
 			<input type="submit"  value="Enregistrer"/>
 			<input type="hidden" name="requete" value="Enregistrer">
-      </form>
 			<?php
 				}
 				else

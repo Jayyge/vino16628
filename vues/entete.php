@@ -42,7 +42,7 @@
 					</ul>
 					
 					
-					<div class="dropdown">
+					<div class="dropdown"><img id="imgmobile" src="images/logo_blanc.png" alt="" >
 						<!-- <div class="float-left"> -->
 							<a id="stats" href="#"><i class="fa fa-chart-bar" title="Statistiques"></i></a>
 						<!-- </div> -->
@@ -58,17 +58,17 @@
 						
 						<div id="myDropdown" class="dropdown-content text-left">
 							<a class="dropdown-item" href="#"><i class="fa fa-fw fa-user"></i>Profil</a>
-						    <a class="dropdown-item" href='index.php?requete=ChangerMotDePass'><i class="fa fa-fw fa-cog"></i>Changer le mot de passe</a>
+						    <a class="dropdown-item" href="#"><i class="fa fa-fw fa-cog"></i>Changer le mot de passe</a>
 						    <a class="dropdown-item" href='index.php?requete=Logout'><i class="fa fa-fw fa-power-off"></i>Se déconnecter</a>
 						</div>
 					</div>
 
 				</nav>
-
+                
 			</div>
 						
-			<img id="cellier" src="images/cellier3.jpg" alt="" width="100%">
-
+			<img id="imgcellier" src="images/cellier3.jpg" alt="" >
+            
 		</header>
 		<main role="main">
 			
